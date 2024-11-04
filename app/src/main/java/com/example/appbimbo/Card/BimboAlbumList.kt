@@ -3,6 +3,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,8 +26,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+
 
 // Data model
 data class Album(
@@ -53,6 +57,8 @@ class AlbumViewModel : ViewModel() {
 
     private val albumApiService = retrofit.create(AlbumApiService::class.java)
 
+    private var currentPage = 0
+    private val pageSize = 1
     init {
         fetchAlbums()
     }
@@ -61,7 +67,24 @@ class AlbumViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val fetchedAlbums = albumApiService.getAlbums()
-                _albums.value = fetchedAlbums
+                _albums.value = fetchedAlbums.take(pageSize)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun loadMoreAlbums() {
+        viewModelScope.launch {
+            try {
+                val allAlbums = albumApiService.getAlbums()
+                val nextPage = currentPage + 1
+                val startIndex = nextPage * pageSize
+                val endIndex = startIndex + pageSize
+                if (startIndex < allAlbums.size) {
+                    _albums.value = _albums.value + allAlbums.subList(startIndex, endIndex.coerceAtMost(allAlbums.size))
+                    currentPage = nextPage
+                }
             } catch (e: Exception) {
                 // Handle error
             }
@@ -170,11 +193,21 @@ fun AlbumInfoItemWithIcon1(label: String, value: String, iconRes: Int) {
 @Composable
 fun BimboAlbumList(viewModel: AlbumViewModel) {
     val albums by viewModel.albums.collectAsState()
+    val listState = rememberLazyListState()
 
-    LazyColumn {
+    LazyColumn(state = listState) {
         items(albums) { album ->
             BimboAlbumCard(album)
         }
+    }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull() }
+            .collect { lastVisibleItem ->
+                if (lastVisibleItem != null && lastVisibleItem.index == albums.size - 1) {
+                    viewModel.loadMoreAlbums()
+                }
+            }
     }
 }
 

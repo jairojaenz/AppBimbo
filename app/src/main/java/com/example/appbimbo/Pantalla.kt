@@ -5,6 +5,8 @@ sealed class Screen(val route: String) {
     object EDA : Screen("eda")
     object CMI : Screen("cmi")
     object MONGO : Screen("mongo")
+    object MONGOOPCIONES : Screen("mongoopciones")
+    object TABULAR : Screen("tabular")
     object CUBEOLAP : Screen("cubeolap")
     object CONSULTA1 : Screen("consulta1")
     object CONSULTA2 : Screen("consulta2")

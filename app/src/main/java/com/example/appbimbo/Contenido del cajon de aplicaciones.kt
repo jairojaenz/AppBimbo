@@ -76,20 +76,20 @@ fun AppDrawerContent(
             DrawerButton(
                 text = "Modelo Tabular",
                 icon = painterResource(id = R.drawable.modeltabular),
-                isSelected = selectedButton == Screen.EDA.route,
+                isSelected = selectedButton == Screen.TABULAR.route,
                 onClick = {
-                    selectedButton = Screen.EDA.route
-                    onDestinationClicked(Screen.EDA.route)
+                    selectedButton = Screen.TABULAR.route
+                    onDestinationClicked(Screen.TABULAR.route)
                 }
             )
 
             DrawerButton(
                 text = "MongoDB",
                 icon = painterResource(id = R.drawable.mongo),
-                isSelected = selectedButton == Screen.MONGO.route,
+                isSelected = selectedButton == Screen.MONGOOPCIONES.route,
                 onClick = {
-                    selectedButton = Screen.MONGO.route
-                    onDestinationClicked(Screen.MONGO.route)
+                    selectedButton = Screen.MONGOOPCIONES.route
+                    onDestinationClicked(Screen.MONGOOPCIONES.route)
                 }
             )
 

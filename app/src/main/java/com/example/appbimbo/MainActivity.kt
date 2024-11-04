@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -65,11 +66,12 @@ fun AppBimboApp() {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(Screen.Home.route) { HomeScreen(navController) } // Pasa navController
-                composable(Screen.EDA.route) { EDAScreen() }
                 composable(Screen.CMI.route) { CMIScreen() }
-                composable(Screen.MONGO.route) { MONGOScreen() }
+                composable(Screen.MONGO.route) { MONGOScreen(navController) }
+                composable(Screen.TABULAR.route) { TABULARScreen(navController) }
+                composable (Screen.MONGOOPCIONES.route) { MONGOOPCIONESScreen(navController) }
                 composable(Screen.CUBEOLAP.route) { CUBEOLAPScreen() }
-                composable(Screen.CONSULTA1.route) { CONSULTA1Screen() }
+                composable(Screen.CONSULTA1.route) { CONSULTA1Screen(navController) }
                 composable(Screen.CONSULTA2.route) { CONSULTA2Screen() }
                 composable(Screen.CONSULTA3.route) { CONSULTA3Screen() }// Asegúrate de que esta línea esté presente
             }
@@ -77,3 +79,5 @@ fun AppBimboApp() {
         }
     }
 }
+
+

@@ -29,7 +29,8 @@ fun NeonEffectCard(
     description: String,
     neonColor: Color = Color(0xFFE8FF00),
     flareColor: Color = Color(0xFFFFFFFF),
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    function: () -> Unit,
 ) {
     var isPressed by remember { mutableStateOf(false) }
     var showFlare by remember { mutableStateOf(false) }
@@ -130,21 +131,22 @@ fun NeonEffectCard(
             )
 
             Column(
+                verticalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 50.dp, top = 16.dp, end = 16.dp, bottom = 16.dp)
+                    .padding(start = 50.dp, end = 16.dp)
             ) {
                 Text(
                     text = title,
                     color = Color.White,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = description,
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
         }
@@ -158,6 +160,8 @@ fun NeonEffectCardPreview() {
         description = "Esta es una tarjeta de ejemplo con efecto neón y destello",
         neonColor = Color(0xFFE8FF00),
         flareColor = Color(0xFFFFFFFF),
-        onClick = { /* Acción al hacer clic */ }
+        onClick = { /* Acción al hacer clic */ },
+        function = {
+        },
     )
 }
