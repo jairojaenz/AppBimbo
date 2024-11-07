@@ -39,6 +39,7 @@ data class Album(
     val title: String
 )
 
+
 // API Service
 interface AlbumApiService {
     @GET("albums")

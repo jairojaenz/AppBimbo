@@ -66,18 +66,30 @@ fun AppBimboApp() {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(Screen.Home.route) { HomeScreen(navController) } // Pasa navController
-                composable(Screen.CMI.route) { CMIScreen() }
-                composable(Screen.MONGO.route) { MONGOScreen(navController) }
                 composable(Screen.TABULAR.route) { TABULARScreen(navController) }
                 composable (Screen.MONGOOPCIONES.route) { MONGOOPCIONESScreen(navController) }
-                composable(Screen.CUBEOLAP.route) { CUBEOLAPScreen() }
                 composable(Screen.CONSULTA1.route) { CONSULTA1Screen(navController) }
-                composable(Screen.CONSULTA2.route) { CONSULTA2Screen() }
-                composable(Screen.CONSULTA3.route) { CONSULTA3Screen() }// Asegúrate de que esta línea esté presente
+                composable(Screen.CONSULTA2.route) { CONSULTA2Screen(navController) }
+                composable(Screen.CONSULTA3.route) { CONSULTA3Screen(navController) }
+                composable(Screen.CONSULTA4.route) { CONSULTA4Screen(navController) }
+                composable(Screen.CONSULTA5.route) { CONSULTA5Screen(navController) }
+                composable(Screen.CONSULTA6.route) { CONSULTA6Screen(navController) }
+                composable(Screen.CONSULTA7.route) { CONSULTA7Screen(navController) }
+                composable(Screen.CONSULTA8.route) { CONSULTA8Screen(navController) }
             }
 
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 
