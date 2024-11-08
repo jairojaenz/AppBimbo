@@ -1,8 +1,6 @@
 package com.example.appbimbo
 
 
-import AlbumViewModel
-import BimboAlbumScreen
 import BimboMongodbScreenClientes
 import BimboMongodbScreenClientesByAge
 import BimboMongodbScreenClientesByCity
@@ -11,6 +9,7 @@ import BimboMongodbScreenPedidosConfirmados
 import BimboMongodbScreenPedidosOrderedByTotal
 import BimboMongodbScreenPedidosPendientes
 import BimboMongodbScreenSucursales
+import BimboTabularScreen
 import ClienteAgeViewModel
 import ClienteCytyViewModel
 import ClienteViewModel
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import ventasproductofechaViewModel
 
 // clase para las opciones de la pantalla de cada opcion del menu
 data class opciones(val title: String, val description: String, val neonColor: Color, val flareColor: Color, val onClick: () -> Unit)
@@ -80,7 +80,7 @@ fun TABULARScreen(navController: NavController) {
             neonColor = Color(0xFFFA0155),
             flareColor = Color(0xFFFA0155),
             onClick = {
-                navController.navigate(Screen.CONSULTA1.route)
+                navController.navigate(Screen.TABULARCONSULTA1.route)
             }
         ),
         opciones(
@@ -429,6 +429,23 @@ fun CONSULTA7Screen(navController: NavController) {
 fun CONSULTA8Screen(navController: NavController) {
     val pedidoConfirmadosViewModel: PedidoConfirmadosViewModel = viewModel()
     BimboMongodbScreenPedidosConfirmados(pedidoConfirmadosViewModel)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Bottom,
+    ) {
+        backbutton(navController = navController)
+    }
+}
+
+
+// Cosultas del modelo tabular
+@Composable
+fun TABULARCONSULTA1Screen(navController: NavController) {
+    val ventasproductofechaViewModel: ventasproductofechaViewModel = viewModel()
+    BimboTabularScreen(ventasproductofechaViewModel)
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -76,11 +76,14 @@ fun AppBimboApp() {
                 composable(Screen.CONSULTA6.route) { CONSULTA6Screen(navController) }
                 composable(Screen.CONSULTA7.route) { CONSULTA7Screen(navController) }
                 composable(Screen.CONSULTA8.route) { CONSULTA8Screen(navController) }
+                composable(Screen.TABULARCONSULTA1.route) { TABULARCONSULTA1Screen(navController) }
             }
 
         }
     }
 }
+
+
 
 
 

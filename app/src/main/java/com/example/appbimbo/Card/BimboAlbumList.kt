@@ -28,10 +28,19 @@ import retrofit2.Retrofit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import com.google.gson.annotations.SerializedName
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
+val URLTABULARAPI = "http://192.168.0.19:5004/"
 
+// aqui se crean las data class para el manejo de la informacion de las tarjetas
+data class VentaProducto(
+    @SerializedName("Mes") val mes: String,
+    @SerializedName("Nombre del producto") val nombreDelProducto: String,
+    @SerializedName("Venta total") val ventaTotal: Double,
+    val iconRes: Int
+)
 // Data model
 data class Album(
     val userId: Int,
@@ -40,12 +49,37 @@ data class Album(
 )
 
 
+interface TabularApi {
+    @GET("ventas")
+    suspend fun getVentas(): List<VentaProducto>
+}
+
 // API Service
 interface AlbumApiService {
     @GET("albums")
     suspend fun getAlbums(): List<Album>
 }
 
+// aqui se crean los viewmodels para el manejo de la informacion de las tarjetas
+class ventasproductofechaViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<VentaProducto>>(emptyList())
+    val ventas : StateFlow<List<VentaProducto>> = _ventas
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("$URLTABULARAPI")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val VentasApiService = retrofit.create(TabularApi::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getVentas()
+        }
+    }
+
+
+}
 // ViewModel
 class AlbumViewModel : ViewModel() {
     private val _albums = MutableStateFlow<List<Album>>(emptyList())
@@ -94,7 +128,7 @@ class AlbumViewModel : ViewModel() {
 }
 
 @Composable
-fun BimboAlbumCard(album: Album) {
+fun BimboTabularCard(data: List<Triple<String, String, Int>>, Titulo: String) {
     val outerGradient = Brush.verticalGradient(
         colors = listOf(Color(0xFF4A0E4E), Color(0xFF000000))
     )
@@ -126,15 +160,9 @@ fun BimboAlbumCard(album: Album) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Bimbo",
+                        text = Titulo,
                         color = Color.White,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Album",
-                        color = Color.White,
-                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -142,15 +170,6 @@ fun BimboAlbumCard(album: Album) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = "Album Information",
-                color = Color.White,
-                fontSize = 14.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Album information with inner gradient
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -162,9 +181,11 @@ fun BimboAlbumCard(album: Album) {
                     verticalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.height(120.dp)
                 ) {
-                    AlbumInfoItemWithIcon1("User ID", album.userId.toString(), R.drawable.gps)
-                    AlbumInfoItemWithIcon1("Album ID", album.id.toString(), R.drawable.hora)
-                    AlbumInfoItemWithIcon1("Title", album.title, R.drawable.postal)
+                    LazyColumn {
+                        items(data) { item ->
+                            Filas(label = item.first, value = item.second, iconRes = item.third)
+                        }
+                    }
                 }
             }
         }
@@ -172,7 +193,7 @@ fun BimboAlbumCard(album: Album) {
 }
 
 @Composable
-fun AlbumInfoItemWithIcon1(label: String, value: String, iconRes: Int) {
+fun Filas(label: String, value: String, iconRes: Int) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 4.dp)
@@ -190,45 +211,24 @@ fun AlbumInfoItemWithIcon1(label: String, value: String, iconRes: Int) {
         )
     }
 }
-
 @Composable
-fun BimboAlbumList(viewModel: AlbumViewModel) {
-    val albums by viewModel.albums.collectAsState()
-    val listState = rememberLazyListState()
+fun TabularVentasList(ventasproductofechaViewModel: ventasproductofechaViewModel){
+    val ventas by ventasproductofechaViewModel.ventas.collectAsState()
 
-    LazyColumn(state = listState) {
-        items(albums) { album ->
-            BimboAlbumCard(album)
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Mes:", venta.mes, R.drawable.mes),
+                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
+                Triple("Venta total:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Ventas por producto por Mes")
         }
-    }
-
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull() }
-            .collect { lastVisibleItem ->
-                if (lastVisibleItem != null && lastVisibleItem.index == albums.size - 1) {
-                    viewModel.loadMoreAlbums()
-                }
-            }
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BimboAlbumScreen(viewModel: AlbumViewModel) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Bimbo Albums") },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF4A0E4E),
-                    titleContentColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).background(Color.Black) ) {
-            BimboAlbumList(viewModel = viewModel)
-        }
-    }
+fun BimboTabularScreen(ventasproductofechaViewModel: ventasproductofechaViewModel) {
+    TabularVentasList(ventasproductofechaViewModel = ventasproductofechaViewModel)
 }
