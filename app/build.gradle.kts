@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.appbimbo"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -81,4 +81,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation ("co.yml:ycharts:2.1.0")
+
+
 }

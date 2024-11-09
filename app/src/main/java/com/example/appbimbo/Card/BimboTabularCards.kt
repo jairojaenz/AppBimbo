@@ -3,7 +3,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -26,19 +25,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import com.google.gson.annotations.SerializedName
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-val URLTABULARAPI = "http://192.168.0.19:5004/"
+val URLTABULARAPI = "http://172.16.81.65:5004/"
 
 // aqui se crean las data class para el manejo de la informacion de las tarjetas
 data class VentaProducto(
     @SerializedName("Mes") val mes: String,
     @SerializedName("Nombre del producto") val nombreDelProducto: String,
     @SerializedName("Venta total") val ventaTotal: Double,
+    val iconRes: Int
+)
+
+data class VentasClientes(
+    @SerializedName("Nombre") val nombreDelCliente: String,
+    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    val iconRes: Int
+)
+data class productoCategoria(
+    @SerializedName("Nombre del producto") val nombreDelProducto: String,
+    @SerializedName("Categoria") val categoria: String,
+    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
     val iconRes: Int
 )
 // Data model
@@ -49,9 +58,19 @@ data class Album(
 )
 
 
-interface TabularApi {
+interface VentaProductoApiService {
     @GET("ventas")
     suspend fun getVentas(): List<VentaProducto>
+}
+
+interface VentasClientesApiService {
+    @GET("clientescantventas")
+    suspend fun getVentasClientes(): List<VentasClientes>
+}
+
+interface ProductoCategoriaApiService {
+    @GET("productoscategoria")
+    suspend fun getProductosCategoria(): List<productoCategoria>
 }
 
 // API Service
@@ -60,17 +79,20 @@ interface AlbumApiService {
     suspend fun getAlbums(): List<Album>
 }
 
+fun coneccionTabularApi(): Retrofit {
+    return Retrofit.Builder()
+        .baseUrl(URLTABULARAPI)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+}
 // aqui se crean los viewmodels para el manejo de la informacion de las tarjetas
 class ventasproductofechaViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<VentaProducto>>(emptyList())
     val ventas : StateFlow<List<VentaProducto>> = _ventas
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("$URLTABULARAPI")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    private val retrofit = coneccionTabularApi()
 
-    private val VentasApiService = retrofit.create(TabularApi::class.java)
+    private val VentasApiService = retrofit.create(VentaProductoApiService::class.java)
 
     init {
         viewModelScope.launch {
@@ -126,7 +148,34 @@ class AlbumViewModel : ViewModel() {
         }
     }
 }
+class ventasclientesViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<VentasClientes>>(emptyList())
+    val ventas : StateFlow<List<VentasClientes>> = _ventas
 
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(VentasClientesApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getVentasClientes()
+        }
+    }
+}
+class productoCategoriaViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<productoCategoria>>(emptyList())
+    val ventas : StateFlow<List<productoCategoria>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(ProductoCategoriaApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getProductosCategoria()
+        }
+    }
+}
 @Composable
 fun BimboTabularCard(data: List<Triple<String, String, Int>>, Titulo: String) {
     val outerGradient = Brush.verticalGradient(
@@ -227,8 +276,49 @@ fun TabularVentasList(ventasproductofechaViewModel: ventasproductofechaViewModel
     }
 }
 
+@Composable
+fun TabularVentasClientesList(ventasclientesViewModel: ventasclientesViewModel){
+    val ventas by ventasclientesViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del cliente:", venta.nombreDelCliente, R.drawable.proveedor),
+                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Clientes con mayor cantidad de compras")
+        }
+    }
+}
+
+@Composable
+fun TabularVentasProductosList(productoCategoriaViewModel: productoCategoriaViewModel){
+    val ventas by productoCategoriaViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.nombreproducto),
+                Triple("Categoria:", venta.categoria, R.drawable.check),
+                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Ventas de productos por categoría")
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BimboTabularScreen(ventasproductofechaViewModel: ventasproductofechaViewModel) {
     TabularVentasList(ventasproductofechaViewModel = ventasproductofechaViewModel)
+}
+
+@Composable
+fun BimboTabularScreenClientes(ventasclientesViewModel: ventasclientesViewModel) {
+    TabularVentasClientesList(ventasclientesViewModel = ventasclientesViewModel)
+}
+
+@Composable
+fun BimboTabularScreenProductos(productoCategoriaViewModel: productoCategoriaViewModel) {
+    TabularVentasProductosList(productoCategoriaViewModel = productoCategoriaViewModel)
 }

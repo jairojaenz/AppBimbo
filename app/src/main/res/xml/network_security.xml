@@ -3,5 +3,8 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.0.3</domain>
         <domain includeSubdomains="true">192.168.0.19</domain>
+        <domain includeSubdomains="true">172.16.81.65</domain>
+        <domain includeSubdomains="true">192.0.2.1</domain>
+        <domain includeSubdomains="true">miapimongodbgrupo2.eastus.azurecontainer.io</domain>
     </domain-config>
 </network-security-config>

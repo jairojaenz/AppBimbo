@@ -17,4 +17,6 @@ sealed class Screen(val route: String) {
 
 
     object TABULARCONSULTA1 : Screen("tabularconsulta1")
+    object TABULARCONSULTA2 : Screen("tabularconsulta2")
+    object TABULARCONSULTA3 : Screen("tabularconsulta3")
 }
