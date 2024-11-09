@@ -14,9 +14,15 @@ sealed class Screen(val route: String) {
     object CONSULTA6 : Screen("consulta6")
     object CONSULTA7 : Screen("consulta7")
     object CONSULTA8 : Screen("consulta8")
+    object CONSULTA9 : Screen("consulta9")
 
 
     object TABULARCONSULTA1 : Screen("tabularconsulta1")
     object TABULARCONSULTA2 : Screen("tabularconsulta2")
     object TABULARCONSULTA3 : Screen("tabularconsulta3")
+    object TABULARCONSULTA4 : Screen("tabularconsulta4")
+    object TABULARCONSULTA5 : Screen("tabularconsulta5")
+    object TABULARCONSULTA6 : Screen("tabularconsulta6")
+    object TABULARCONSULTA7 : Screen("tabularconsulta7")
+    object TABULARCONSULTA8 : Screen("tabularconsulta8")
 }

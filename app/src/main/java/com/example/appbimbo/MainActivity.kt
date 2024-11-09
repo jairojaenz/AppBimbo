@@ -76,9 +76,15 @@ fun AppBimboApp() {
                 composable(Screen.CONSULTA6.route) { CONSULTA6Screen(navController) }
                 composable(Screen.CONSULTA7.route) { CONSULTA7Screen(navController) }
                 composable(Screen.CONSULTA8.route) { CONSULTA8Screen(navController) }
+                composable(Screen.CONSULTA9.route) { CONSULTA9Screen(navController) }
                 composable(Screen.TABULARCONSULTA1.route) { TABULARCONSULTA1Screen(navController) }
                 composable(Screen.TABULARCONSULTA2.route) { TABULARCONSULTA2Screen(navController) }
                 composable(Screen.TABULARCONSULTA3.route) { TABULARCONSULTA3Screen(navController) }
+                composable(Screen.TABULARCONSULTA4.route) { TABULARCONSULTA4Screen(navController) }
+                composable(Screen.TABULARCONSULTA5.route) { TABULARCONSULTA5Screen(navController) }
+                composable(Screen.TABULARCONSULTA6.route) { TABULARCONSULTA6Screen(navController) }
+                composable(Screen.TABULARCONSULTA7.route) { TABULARCONSULTA7Screen(navController) }
+                composable(Screen.TABULARCONSULTA8.route) { TABULARCONSULTA8Screen(navController) }
             }
 
         }

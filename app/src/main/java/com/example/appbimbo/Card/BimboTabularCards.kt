@@ -29,7 +29,7 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-val URLTABULARAPI = "http://172.16.81.65:5004/"
+val URLTABULARAPI = " http://192.168.0.19:5004/"
 
 // aqui se crean las data class para el manejo de la informacion de las tarjetas
 data class VentaProducto(
@@ -38,7 +38,6 @@ data class VentaProducto(
     @SerializedName("Venta total") val ventaTotal: Double,
     val iconRes: Int
 )
-
 data class VentasClientes(
     @SerializedName("Nombre") val nombreDelCliente: String,
     @SerializedName("Cantidad de ventas") val ventaTotal: Double,
@@ -50,6 +49,32 @@ data class productoCategoria(
     @SerializedName("Cantidad de ventas") val ventaTotal: Double,
     val iconRes: Int
 )
+data class PromedioVentas(
+    @SerializedName("Mes") val mes: String,
+    @SerializedName("Promedio de ventas diarias") val promedioVentas: Double,
+    val iconRes: Int
+)
+data class  IngresosMensuales(
+    @SerializedName("Mes") val mes: String,
+    @SerializedName("Ingresos totales") val ingresos: Double,
+)
+data class VentasSemanales(
+    @SerializedName("Mes") val mes: String,
+    @SerializedName("Anio") val anio: Int,
+    @SerializedName("Semana del mes") val semanames: Int,
+    @SerializedName("Venta total") val ventaTotal: Double,
+)
+data class PMenosVendidos(
+    @SerializedName("Nombre del producto") val nombreDelProducto: String,
+    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    val iconRes: Int
+)
+data class ProductosfinSemana(
+    @SerializedName("Nombre del producto") val nombreDelProducto: String,
+    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+)
+
+
 // Data model
 data class Album(
     val userId: Int,
@@ -62,15 +87,33 @@ interface VentaProductoApiService {
     @GET("ventas")
     suspend fun getVentas(): List<VentaProducto>
 }
-
 interface VentasClientesApiService {
     @GET("clientescantventas")
     suspend fun getVentasClientes(): List<VentasClientes>
 }
-
 interface ProductoCategoriaApiService {
     @GET("productoscategoria")
     suspend fun getProductosCategoria(): List<productoCategoria>
+}
+interface PromedioVentasApiService {
+    @GET("promedioventasdiarias")
+    suspend fun getPromedioVentas(): List<PromedioVentas>
+}
+interface IngresosMensualesApiService {
+    @GET("ingresosmensuales")
+    suspend fun getIngresosMensuales(): List<IngresosMensuales>
+}
+interface VentasSemanalesApiService {
+    @GET("ventassemanales")
+    suspend fun getVentasSemanales(): List<VentasSemanales>
+}
+interface PMenosVendidosApiService {
+    @GET("productosmenosvendidos")
+    suspend fun getPMenosVendidos(): List<PMenosVendidos>
+}
+interface ProductosfinSemanaApiService {
+    @GET("productosfinesdesemana")
+    suspend fun getProductosfinSemana(): List<ProductosfinSemana>
 }
 
 // API Service
@@ -176,6 +219,78 @@ class productoCategoriaViewModel: ViewModel() {
         }
     }
 }
+class promedioventasViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<PromedioVentas>>(emptyList())
+    val ventas : StateFlow<List<PromedioVentas>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(PromedioVentasApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getPromedioVentas()
+        }
+    }
+}
+class ingresosmensualesViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<IngresosMensuales>>(emptyList())
+    val ventas : StateFlow<List<IngresosMensuales>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(IngresosMensualesApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getIngresosMensuales()
+        }
+    }
+}
+class ventasSemanalesViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<VentasSemanales>>(emptyList())
+    val ventas : StateFlow<List<VentasSemanales>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(VentasSemanalesApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getVentasSemanales()
+        }
+    }
+}
+class PMenosVendidosViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<PMenosVendidos>>(emptyList())
+    val ventas : StateFlow<List<PMenosVendidos>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(PMenosVendidosApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getPMenosVendidos()
+        }
+    }
+}
+class ProductosfinSemanaViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<ProductosfinSemana>>(emptyList())
+    val ventas : StateFlow<List<ProductosfinSemana>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(ProductosfinSemanaApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getProductosfinSemana()
+        }
+    }
+}
+
+
 @Composable
 fun BimboTabularCard(data: List<Triple<String, String, Int>>, Titulo: String) {
     val outerGradient = Brush.verticalGradient(
@@ -307,6 +422,84 @@ fun TabularVentasProductosList(productoCategoriaViewModel: productoCategoriaView
     }
 }
 
+@Composable
+fun TabularPromedioVentasList(promedioventasViewModel: promedioventasViewModel){
+    val ventas by promedioventasViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del producto:", venta.mes, R.drawable.nombreproducto),
+                Triple("Promedio de ventas:", venta.promedioVentas.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Promedio de ventass diarias")
+        }
+    }
+}
+
+@Composable
+fun TabularIngresosMensualesList(ingresosmensualesViewModel: ingresosmensualesViewModel){
+    val ventas by ingresosmensualesViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Mes:", venta.mes, R.drawable.mes),
+                Triple("Ingresos totales:", venta.ingresos.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Ingresos totales mensuales")
+        }
+    }
+}
+
+@Composable
+fun TabularVentasSemanalesList(ventasSemanalesViewModel: ventasSemanalesViewModel){
+    val ventas by ventasSemanalesViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Mes:", venta.mes, R.drawable.mes),
+                Triple("Anio:", venta.anio.toString(), R.drawable.anio),
+                Triple("Semana del mes:", venta.semanames.toString(), R.drawable.semana),
+                Triple("Venta total:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Ventas semanales")
+        }
+    }
+}
+
+@Composable
+fun TabularPMenosVendidosList(pmenosvendidosViewModel: PMenosVendidosViewModel){
+    val ventas by pmenosvendidosViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
+                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Productos menos vendidos")
+        }
+    }
+}
+
+@Composable
+fun TabularProductosFinSemanaList(productosfinSemanaViewModel: ProductosfinSemanaViewModel){
+    val ventas by productosfinSemanaViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
+                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Productos vendidos los fines de semana")
+        }
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BimboTabularScreen(ventasproductofechaViewModel: ventasproductofechaViewModel) {
@@ -321,4 +514,24 @@ fun BimboTabularScreenClientes(ventasclientesViewModel: ventasclientesViewModel)
 @Composable
 fun BimboTabularScreenProductos(productoCategoriaViewModel: productoCategoriaViewModel) {
     TabularVentasProductosList(productoCategoriaViewModel = productoCategoriaViewModel)
+}
+@Composable
+fun BimboTabularScreenPromedio(promedioventasViewModel: promedioventasViewModel) {
+    TabularPromedioVentasList(promedioventasViewModel = promedioventasViewModel)
+}
+@Composable
+fun BimboTabularScreenIngresos(ingresosmensualesViewModel: ingresosmensualesViewModel) {
+    TabularIngresosMensualesList(ingresosmensualesViewModel = ingresosmensualesViewModel)
+}
+@Composable
+fun BimboTabularScreenSemanales(ventasSemanalesViewModel: ventasSemanalesViewModel) {
+    TabularVentasSemanalesList(ventasSemanalesViewModel = ventasSemanalesViewModel)
+}
+@Composable
+fun BimboTabularScreenPMenos(pmenosvendidosViewModel: PMenosVendidosViewModel) {
+    TabularPMenosVendidosList(pmenosvendidosViewModel = pmenosvendidosViewModel)
+}
+@Composable
+fun BimboTabularScreenProductosFinSemana(productosfinSemanaViewModel: ProductosfinSemanaViewModel) {
+    TabularProductosFinSemanaList(productosfinSemanaViewModel = productosfinSemanaViewModel)
 }

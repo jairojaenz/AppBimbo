@@ -39,7 +39,8 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 // aqui se asigna la url de la api
-val URLAPI ="http://miapimongodbgrupo2.eastus.azurecontainer.io:5002//"
+val URLAPI ="http://miapimongodbgrupo2.eastus.azurecontainer.io:5002/"
+//val URLAPI ="http://192.168.0.19:5002/"
 
 // aqui se crean las data class para cada consulta
 data class Direccion(
@@ -88,6 +89,12 @@ data class Pedido(
     val productos: List<Producto>,
     val total_pedido: Double
 )
+data class Comentarios(
+    val nombre_cliente: String,
+    val fecha_publicacion: String,
+    val contenido: String,
+    val tipo_comentario: String,
+)
 // aqui se crean los servicios para cada data class
 // api service for cliente
 interface ClienteApiService {
@@ -119,6 +126,12 @@ interface PedidoApiService {
     @GET("pedidos/confirmados")
     suspend fun getPedidosConfirmados(): List<Pedido>
 }
+// api service for comentarios
+interface ComentariosApiService {
+    @GET("comentarios")
+    suspend fun getComentarios(): List<Comentarios>
+}
+
 // aqui se crean los viewmodels para cada data class
 // ViewModel for cliente
 class ClienteViewModel : ViewModel() {
@@ -300,11 +313,29 @@ class PedidoConfirmadosViewModel: ViewModel() {
         }
     }
 }
+//ViewModel for comentarios
+class ComentariosViewModel: ViewModel() {
+    private val _comentarios = MutableStateFlow<List<Comentarios>>(emptyList())
+    val comentarios: StateFlow<List<Comentarios>> = _comentarios
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("$URLAPI")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val comentariosApiService = retrofit.create(ComentariosApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _comentarios.value = comentariosApiService.getComentarios()
+        }
+    }
+}
 
 //Elemento composable para realizar las cards de la aplicacion
 @Composable
 fun BimboMongoDbCard(data: List<Pair<String, String>>, Titulo: String) {
-    val cardHeight = (data.size * 50).dp
+    val cardHeight = (data.size * 80).dp
     Card(
         modifier = Modifier
             .height(cardHeight) // Adjust the height of the card
@@ -647,6 +678,23 @@ fun BimboMongodbListPedidosConfirmados(pedidoConfirmadosViewModel: PedidoConfirm
         }
     }
 }
+//Lista de comentarios
+@Composable
+fun BimboMongodbListComentarios(comentariosViewModel: ComentariosViewModel) {
+    val comentarios by comentariosViewModel.comentarios.collectAsState()
+
+    LazyColumn {
+        items(comentarios) { comentario ->
+            val data = listOf(
+                "Nombre del cliente" to comentario.nombre_cliente,
+                "Fecha de publicación" to comentario.fecha_publicacion,
+                "Contenido" to comentario.contenido,
+                "Tipo de comentario" to comentario.tipo_comentario
+            )
+            BimboMongoDbCard(data = data, Titulo = "Información del comentario")
+        }
+    }
+}
 
 //aqui se crean las pantallas de la aplicacion
 @Composable
@@ -680,6 +728,10 @@ fun BimboMongodbScreenPedidosPendientes(pedidoPendientesViewModel: PedidoPendien
 @Composable
 fun BimboMongodbScreenPedidosConfirmados(pedidoConfirmadosViewModel: PedidoConfirmadosViewModel) {
     BimboMongodbListPedidosConfirmados(pedidoConfirmadosViewModel = pedidoConfirmadosViewModel)
+}
+@Composable
+fun BimboMongodbScreenComentarios(comentariosViewModel: ComentariosViewModel) {
+    BimboMongodbListComentarios(comentariosViewModel = comentariosViewModel)
 }
 
 
