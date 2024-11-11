@@ -15,6 +15,9 @@ sealed class Screen(val route: String) {
     object CONSULTA7 : Screen("consulta7")
     object CONSULTA8 : Screen("consulta8")
     object CONSULTA9 : Screen("consulta9")
+    object CONSULTA10 : Screen("consulta10")
+    object CONSULTA11 : Screen("consulta11")
+
 
 
     object TABULARCONSULTA1 : Screen("tabularconsulta1")
@@ -25,4 +28,6 @@ sealed class Screen(val route: String) {
     object TABULARCONSULTA6 : Screen("tabularconsulta6")
     object TABULARCONSULTA7 : Screen("tabularconsulta7")
     object TABULARCONSULTA8 : Screen("tabularconsulta8")
+    object TABULARCONSULTA9 : Screen("tabularconsulta9")
+    object TABULARCONSULTA10 : Screen("tabularconsulta10")
 }

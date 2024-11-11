@@ -73,6 +73,15 @@ data class ProductosfinSemana(
     @SerializedName("Nombre del producto") val nombreDelProducto: String,
     @SerializedName("Cantidad de ventas") val ventaTotal: Double,
 )
+data class ProductosPorProveedor(
+    @SerializedName("Nombre del producto") val nombreDelProducto: String,
+    @SerializedName("Proveedor") val nombreDelProveedor: String,
+    @SerializedName("Cantidad de ventas") val ventaTotal: Double
+)
+data class TopingresosClientes(
+    @SerializedName("Nombre") val nombreDelCliente: String,
+    @SerializedName("Ingresos") val ingresos: Double,
+)
 
 
 // Data model
@@ -82,7 +91,7 @@ data class Album(
     val title: String
 )
 
-
+// interface para el manejo de la informacion de las tarjetas
 interface VentaProductoApiService {
     @GET("ventas")
     suspend fun getVentas(): List<VentaProducto>
@@ -114,6 +123,14 @@ interface PMenosVendidosApiService {
 interface ProductosfinSemanaApiService {
     @GET("productosfinesdesemana")
     suspend fun getProductosfinSemana(): List<ProductosfinSemana>
+}
+interface ProductosPorProveedorApiService {
+    @GET("ventasporproveedor")
+    suspend fun getProductosProveedor(): List<ProductosPorProveedor>
+}
+interface TopIngresosClientesApiService {
+    @GET("topingresosporcliente")
+    suspend fun getTopIngresosClientes(): List<TopingresosClientes>
 }
 
 // API Service
@@ -286,6 +303,34 @@ class ProductosfinSemanaViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             _ventas.value = VentasApiService.getProductosfinSemana()
+        }
+    }
+}
+class ProductoPorProveedorViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<ProductosPorProveedor>>(emptyList())
+    val ventas : StateFlow<List<ProductosPorProveedor>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(ProductosPorProveedorApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getProductosProveedor()
+        }
+    }
+}
+class TopIngresosClientesViewModel: ViewModel() {
+    private val _ventas = MutableStateFlow<List<TopingresosClientes>>(emptyList())
+    val ventas : StateFlow<List<TopingresosClientes>> = _ventas
+
+    private val retrofit = coneccionTabularApi()
+
+    private val VentasApiService = retrofit.create(TopIngresosClientesApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _ventas.value = VentasApiService.getTopIngresosClientes()
         }
     }
 }
@@ -499,6 +544,37 @@ fun TabularProductosFinSemanaList(productosfinSemanaViewModel: ProductosfinSeman
     }
 }
 
+@Composable
+fun TabularProductosPorProveedorList(productosPorProveedorViewModel: ProductoPorProveedorViewModel){
+    val ventas by productosPorProveedorViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
+                Triple("Nombre del proveedor:", venta.nombreDelProveedor, R.drawable.proveedor),
+                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Venta de Productos por proveedor")
+        }
+    }
+}
+
+@Composable
+fun TabularTopIngresosClientesList(topIngresosClientesViewModel: TopIngresosClientesViewModel){
+    val ventas by topIngresosClientesViewModel.ventas.collectAsState()
+
+    LazyColumn {
+        items(ventas) { venta ->
+            val data = listOf(
+                Triple("Nombre del cliente:", venta.nombreDelCliente, R.drawable.proveedor),
+                Triple("Ingresos:", venta.ingresos.toString(), R.drawable.cantproducto)
+            )
+            BimboTabularCard(data, "Top de ingresos por cliente")
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -534,4 +610,14 @@ fun BimboTabularScreenPMenos(pmenosvendidosViewModel: PMenosVendidosViewModel) {
 @Composable
 fun BimboTabularScreenProductosFinSemana(productosfinSemanaViewModel: ProductosfinSemanaViewModel) {
     TabularProductosFinSemanaList(productosfinSemanaViewModel = productosfinSemanaViewModel)
+}
+
+@Composable
+fun BimboTabularScreenProductosPorProveedor(productosPorProveedorViewModel: ProductoPorProveedorViewModel) {
+    TabularProductosPorProveedorList(productosPorProveedorViewModel = productosPorProveedorViewModel)
+}
+
+@Composable
+fun BimboTabularScreenTopIngresosClientes(topIngresosClientesViewModel: TopIngresosClientesViewModel) {
+    TabularTopIngresosClientesList(topIngresosClientesViewModel = topIngresosClientesViewModel)
 }

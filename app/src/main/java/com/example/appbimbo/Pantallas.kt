@@ -5,6 +5,9 @@ import BimboMongodbListComentarios
 import BimboMongodbScreenClientes
 import BimboMongodbScreenClientesByAge
 import BimboMongodbScreenClientesByCity
+import BimboMongodbScreenComentarios
+import BimboMongodbScreenDevoluciones
+import BimboMongodbScreenFacturacionPago
 import BimboMongodbScreenPedidos
 import BimboMongodbScreenPedidosConfirmados
 import BimboMongodbScreenPedidosOrderedByTotal
@@ -16,20 +19,27 @@ import BimboTabularScreenIngresos
 import BimboTabularScreenPMenos
 import BimboTabularScreenProductos
 import BimboTabularScreenProductosFinSemana
+import BimboTabularScreenProductosPorProveedor
 import BimboTabularScreenPromedio
 import BimboTabularScreenSemanales
+import BimboTabularScreenTopIngresosClientes
 import ClienteAgeViewModel
 import ClienteCytyViewModel
 import ClienteViewModel
 import ComentariosViewModel
+import DevolucionViewModel
+import FacturacionPagoViewModel
 import PMenosVendidosViewModel
 import PedidoConfirmadosViewModel
 import PedidoOrderedByTotalViewModel
 import PedidoPendientesViewModel
 import PedidoViewModel
+import ProductoPorProveedorViewModel
 import ProductosfinSemanaViewModel
 import PromedioVentas
 import SucursalViewModel
+import TopIngresosClientesViewModel
+import TopingresosClientes
 import android.text.TextUtils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -97,6 +107,7 @@ import co.yml.charts.ui.linechart.model.ShadowUnderLine
 import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
+import facturacionpago
 import ingresosmensualesViewModel
 import productoCategoriaViewModel
 import promedioventasViewModel
@@ -258,7 +269,7 @@ fun TABULARScreen(navController: NavController) {
             neonColor = Color(0xFFFF3300),
             flareColor = Color(0xFFFF1E00),
             onClick = {
-                //navController.navigate(Screen.CONSULTA3.route)
+                navController.navigate(Screen.TABULARCONSULTA9.route)
             }
         ),
         //Top ingresos por cliente
@@ -268,7 +279,7 @@ fun TABULARScreen(navController: NavController) {
             neonColor = Color(0xFF00FFD9),
             flareColor = Color(0xFF00FFB7),
             onClick = {
-                //navController.navigate(Screen.CONSULTA3.route)
+                navController.navigate(Screen.TABULARCONSULTA10.route)
             }
         )
     )
@@ -390,7 +401,7 @@ fun MONGOOPCIONESScreen(navController: NavController) {
             neonColor = Color(0xFF00FFD9),
             flareColor = Color(0xFF00FFB7),
             onClick = {
-                //navController.navigate(Screen.CONSULTA10.route)
+                navController.navigate(Screen.CONSULTA10.route)
             }
         ),
         //devoluciones co cantidad de productos mayores a 5
@@ -400,7 +411,7 @@ fun MONGOOPCIONESScreen(navController: NavController) {
             neonColor = Color(0xFF00FFD9),
             flareColor = Color(0xFF00FFB7),
             onClick = {
-                //navController.navigate(Screen.CONSULTA11.route)
+                navController.navigate(Screen.CONSULTA11.route)
             }
         )
     )
@@ -543,7 +554,7 @@ fun CONSULTA8Screen(navController: NavController) {
 @Composable
 fun CONSULTA9Screen(navController: NavController) {
     val viewModel: ComentariosViewModel = viewModel()
-    BimboMongodbListComentarios(viewModel)
+    BimboMongodbScreenComentarios(viewModel)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -553,6 +564,22 @@ fun CONSULTA9Screen(navController: NavController) {
     ) {
         backbutton(navController = navController)
     }
+}
+@Composable
+fun CONSULTA10Screen(navController: NavController) {
+    val viewModel: FacturacionPagoViewModel = viewModel()
+
+    BimboMongodbScreenFacturacionPago(viewModel)
+    goBack(navController = navController)
+
+
+}
+@Composable
+fun CONSULTA11Screen(navController: NavController) {
+    val viewModel: DevolucionViewModel = viewModel()
+
+    BimboMongodbScreenDevoluciones(viewModel)
+    goBack(navController = navController)
 }
 
 // Cosultas del modelo tabular
@@ -610,6 +637,20 @@ fun TABULARCONSULTA8Screen(navController: NavController) {
     val productosfinSemanaViewModel: ProductosfinSemanaViewModel = viewModel()
 
     BimboTabularScreenProductosFinSemana(productosfinSemanaViewModel)
+    goBack(navController = navController)
+}
+@Composable
+fun TABULARCONSULTA9Screen(navController: NavController) {
+    val productoPorProveedorViewModel: ProductoPorProveedorViewModel = viewModel()
+
+    BimboTabularScreenProductosPorProveedor(productoPorProveedorViewModel)
+    goBack(navController = navController)
+}
+@Composable
+fun TABULARCONSULTA10Screen(navController: NavController) {
+    val topIngresosClientesViewModel:TopIngresosClientesViewModel = viewModel()
+
+    BimboTabularScreenTopIngresosClientes(topIngresosClientesViewModel)
     goBack(navController = navController)
 }
 

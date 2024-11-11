@@ -95,6 +95,25 @@ data class Comentarios(
     val contenido: String,
     val tipo_comentario: String,
 )
+data class facturacionpago(
+    val _id: Int,
+    val estado_pago: String,
+    val fecha_emision: String,
+    val fecha_vencimiento: String,
+    val metodo_pago: String,
+    val monto_total: Double,
+    val nombre_cliente: String,
+    val nombres_productos: List<String>
+)
+data class devolucion(
+    val _id: Int,
+    val cantidad_devuelta: Int,
+    val estado_devolucion: String,
+    val motivo_devolucion: String,
+    val pedido_id: Int,
+    val productos_devueltos: List<Producto>
+)
+
 // aqui se crean los servicios para cada data class
 // api service for cliente
 interface ClienteApiService {
@@ -130,6 +149,15 @@ interface PedidoApiService {
 interface ComentariosApiService {
     @GET("comentarios")
     suspend fun getComentarios(): List<Comentarios>
+}
+// api service for facturacion y pago
+interface FacturacionPagoApiService {
+    @GET("facturacionpagos")
+    suspend fun getFacturacionPago(): List<facturacionpago>
+}
+interface DevolucionApiService {
+    @GET("devoluciones")
+    suspend fun getDevoluciones(): List<devolucion>
 }
 
 // aqui se crean los viewmodels para cada data class
@@ -331,11 +359,47 @@ class ComentariosViewModel: ViewModel() {
         }
     }
 }
+//ViewModel for facturacion y pago
+class FacturacionPagoViewModel: ViewModel() {
+    private val _facturacionPago = MutableStateFlow<List<facturacionpago>>(emptyList())
+    val facturacionPago: StateFlow<List<facturacionpago>> = _facturacionPago
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("$URLAPI")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val facturacionPagoApiService = retrofit.create(FacturacionPagoApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _facturacionPago.value = facturacionPagoApiService.getFacturacionPago()
+        }
+    }
+}
+//ViewModel for devoluciones
+class DevolucionViewModel: ViewModel() {
+    private val _devoluciones = MutableStateFlow<List<devolucion>>(emptyList())
+    val devoluciones: StateFlow<List<devolucion>> = _devoluciones
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("$URLAPI")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val devolucionApiService = retrofit.create(DevolucionApiService::class.java)
+
+    init {
+        viewModelScope.launch {
+            _devoluciones.value = devolucionApiService.getDevoluciones()
+        }
+    }
+}
 
 //Elemento composable para realizar las cards de la aplicacion
 @Composable
 fun BimboMongoDbCard(data: List<Pair<String, String>>, Titulo: String) {
-    val cardHeight = (data.size * 80).dp
+    val cardHeight = (data.size * 50).dp
     Card(
         modifier = Modifier
             .height(cardHeight) // Adjust the height of the card
@@ -695,6 +759,43 @@ fun BimboMongodbListComentarios(comentariosViewModel: ComentariosViewModel) {
         }
     }
 }
+//Facturacion y pago
+@Composable
+fun BimboMongodbListFacturacionPago(facturacionPagoViewModel: FacturacionPagoViewModel) {
+    val facturacionPago by facturacionPagoViewModel.facturacionPago.collectAsState()
+
+    LazyColumn {
+        items(facturacionPago) { facturacionPago ->
+            val data = listOf(
+                "Nombre del cliente" to facturacionPago.nombre_cliente,
+                "Estado de pago" to facturacionPago.estado_pago,
+                "Fecha de emisión" to facturacionPago.fecha_emision,
+                "Fecha de vencimiento" to facturacionPago.fecha_vencimiento,
+                "Método de pago" to facturacionPago.metodo_pago,
+                "Monto total" to facturacionPago.monto_total.toString(),
+                "Productos" to facturacionPago.nombres_productos.joinToString()
+            )
+            BimboMongoDbCard(data = data, Titulo = "Información de facturación y pago")
+        }
+    }
+}
+@Composable
+fun BimboMongodbListDevoluciones(devolucionViewModel: DevolucionViewModel) {
+    val devoluciones by devolucionViewModel.devoluciones.collectAsState()
+
+    LazyColumn {
+        items(devoluciones) { devolucion ->
+            val data = listOf(
+                "Cantidad devuelta" to devolucion.cantidad_devuelta.toString(),
+                "Estado de devolución" to devolucion.estado_devolucion,
+                "Motivo de devolución" to devolucion.motivo_devolucion,
+                "Pedido ID" to devolucion.pedido_id.toString(),
+                "Productos devueltos" to devolucion.productos_devueltos.joinToString { (it.nombre_producto to it.cantidad.toString()).toString() }
+            )
+            BimboMongoDbCard(data = data, Titulo = "Información de devolución")
+        }
+    }
+}
 
 //aqui se crean las pantallas de la aplicacion
 @Composable
@@ -733,5 +834,12 @@ fun BimboMongodbScreenPedidosConfirmados(pedidoConfirmadosViewModel: PedidoConfi
 fun BimboMongodbScreenComentarios(comentariosViewModel: ComentariosViewModel) {
     BimboMongodbListComentarios(comentariosViewModel = comentariosViewModel)
 }
-
+@Composable
+fun BimboMongodbScreenFacturacionPago(facturacionPagoViewModel: FacturacionPagoViewModel) {
+    BimboMongodbListFacturacionPago(facturacionPagoViewModel = facturacionPagoViewModel)
+}
+@Composable
+fun BimboMongodbScreenDevoluciones(devolucionViewModel: DevolucionViewModel) {
+    BimboMongodbListDevoluciones(devolucionViewModel = devolucionViewModel)
+}
 
