@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.0.3</domain>
-        <domain includeSubdomains="true">192.168.0.19</domain>
-        <domain includeSubdomains="true">172.16.81.65</domain>
-        <domain includeSubdomains="true">192.0.2.1</domain>
-        <domain includeSubdomains="true">miapimongodbgrupo2.eastus.azurecontainer.io</domain>
+        <domain includeSubdomains="true">apitabularserver.westus2.cloudapp.azure.com</domain>
+        <domain includeSubdomains="true">bimboapimongodb.centralus.azurecontainer.io</domain>
     </domain-config>
 </network-security-config>

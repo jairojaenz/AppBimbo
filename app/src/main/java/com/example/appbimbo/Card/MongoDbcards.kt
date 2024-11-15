@@ -39,7 +39,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 // aqui se asigna la url de la api
-val URLAPI ="http://miapimongodbgrupo2.eastus.azurecontainer.io:5002/"
+val URLAPI ="http://bimboapimongodb.centralus.azurecontainer.io:5002/"
 //val URLAPI ="http://192.168.0.19:5002/"
 
 // aqui se crean las data class para cada consulta

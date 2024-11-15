@@ -214,7 +214,7 @@ fun TABULARScreen(navController: NavController) {
             }
         ),
         opciones(
-            title = "Promedio de ventas por diarias",
+            title = "Promedio de ventas diarias",
             description = "Ver el promedio de ventas diarias en la empresa Bimbo",
             neonColor = Color(0xFF00FFC0),
             flareColor = Color(0xFF00FFC0),

@@ -29,58 +29,58 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-val URLTABULARAPI = " http://192.168.0.19:5004/"
+val URLTABULARAPI = "http://apitabularserver.westus2.cloudapp.azure.com/apitab/TABULAR/"
 
 // aqui se crean las data class para el manejo de la informacion de las tarjetas
 data class VentaProducto(
-    @SerializedName("Mes") val mes: String,
-    @SerializedName("Nombre del producto") val nombreDelProducto: String,
-    @SerializedName("Venta total") val ventaTotal: Double,
+    @SerializedName("Nombre del mes") val mes: String,
+    @SerializedName("Nombre Producto") val nombreDelProducto: String,
+    @SerializedName("Ventas totales") val ventaTotal: Double,
     val iconRes: Int
 )
 data class VentasClientes(
-    @SerializedName("Nombre") val nombreDelCliente: String,
-    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    @SerializedName("Nombre Cliente") val nombreDelCliente: String,
+    @SerializedName("Cantidad ventas") val ventaTotal: Double,
     val iconRes: Int
 )
 data class productoCategoria(
-    @SerializedName("Nombre del producto") val nombreDelProducto: String,
-    @SerializedName("Categoria") val categoria: String,
-    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    @SerializedName("Nombre Producto") val nombreDelProducto: String,
+    @SerializedName("Categoria Producto") val categoria: String,
+    @SerializedName("Ventas totales") val ventaTotal: Double,
     val iconRes: Int
 )
 data class PromedioVentas(
-    @SerializedName("Mes") val mes: String,
-    @SerializedName("Promedio de ventas diarias") val promedioVentas: Double,
+    @SerializedName("Nombre del mes") val mes: String,
+    @SerializedName("Promedio ventas diarias") val promedioVentas: Double,
     val iconRes: Int
 )
 data class  IngresosMensuales(
-    @SerializedName("Mes") val mes: String,
-    @SerializedName("Ingresos totales") val ingresos: Double,
+    @SerializedName("Nombre del mes") val mes: String,
+    @SerializedName("Ventas totales") val ingresos: Double,
 )
 data class VentasSemanales(
-    @SerializedName("Mes") val mes: String,
+    @SerializedName("Nombre del mes") val mes: String,
     @SerializedName("Anio") val anio: Int,
     @SerializedName("Semana del mes") val semanames: Int,
-    @SerializedName("Venta total") val ventaTotal: Double,
+    @SerializedName("Venta totales") val ventaTotal: Double,
 )
 data class PMenosVendidos(
-    @SerializedName("Nombre del producto") val nombreDelProducto: String,
-    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    @SerializedName("Nombre Producto") val nombreDelProducto: String,
+    @SerializedName("Cantidad ventas") val ventaTotal: Double,
     val iconRes: Int
 )
 data class ProductosfinSemana(
-    @SerializedName("Nombre del producto") val nombreDelProducto: String,
-    @SerializedName("Cantidad de ventas") val ventaTotal: Double,
+    @SerializedName("Nombre Producto") val nombreDelProducto: String,
+    @SerializedName("Cantidad ventas") val ventaTotal: Double,
 )
 data class ProductosPorProveedor(
-    @SerializedName("Nombre del producto") val nombreDelProducto: String,
-    @SerializedName("Proveedor") val nombreDelProveedor: String,
-    @SerializedName("Cantidad de ventas") val ventaTotal: Double
+    @SerializedName("Nombre Producto") val nombreDelProducto: String,
+    @SerializedName("Nombre Proveedor") val nombreDelProveedor: String,
+    @SerializedName("Cantidad ventas") val ventaTotal: Double
 )
 data class TopingresosClientes(
-    @SerializedName("Nombre") val nombreDelCliente: String,
-    @SerializedName("Ingresos") val ingresos: Double,
+    @SerializedName("Nombre Cliente") val nombreDelCliente: String,
+    @SerializedName("Ventas totales") val ingresos: Double,
 )
 
 
@@ -93,43 +93,43 @@ data class Album(
 
 // interface para el manejo de la informacion de las tarjetas
 interface VentaProductoApiService {
-    @GET("ventas")
+    @GET("Venta de productos por fecha")
     suspend fun getVentas(): List<VentaProducto>
 }
 interface VentasClientesApiService {
-    @GET("clientescantventas")
+    @GET("clientes con mayor cantidad de ventas")
     suspend fun getVentasClientes(): List<VentasClientes>
 }
 interface ProductoCategoriaApiService {
-    @GET("productoscategoria")
+    @GET("Ventas de productos por categoria")
     suspend fun getProductosCategoria(): List<productoCategoria>
 }
 interface PromedioVentasApiService {
-    @GET("promedioventasdiarias")
+    @GET("Promedio de ventas diarias")
     suspend fun getPromedioVentas(): List<PromedioVentas>
 }
 interface IngresosMensualesApiService {
-    @GET("ingresosmensuales")
+    @GET("Ingresos totales mensuales")
     suspend fun getIngresosMensuales(): List<IngresosMensuales>
 }
 interface VentasSemanalesApiService {
-    @GET("ventassemanales")
+    @GET("Ventas semanales")
     suspend fun getVentasSemanales(): List<VentasSemanales>
 }
 interface PMenosVendidosApiService {
-    @GET("productosmenosvendidos")
+    @GET("productos menos vendidos")
     suspend fun getPMenosVendidos(): List<PMenosVendidos>
 }
 interface ProductosfinSemanaApiService {
-    @GET("productosfinesdesemana")
+    @GET("Ventas de productos en fin de semana")
     suspend fun getProductosfinSemana(): List<ProductosfinSemana>
 }
 interface ProductosPorProveedorApiService {
-    @GET("ventasporproveedor")
+    @GET("Venta de productos por proveedor")
     suspend fun getProductosProveedor(): List<ProductosPorProveedor>
 }
 interface TopIngresosClientesApiService {
-    @GET("topingresosporcliente")
+    @GET("Top ingresos por cliente")
     suspend fun getTopIngresosClientes(): List<TopingresosClientes>
 }
 
@@ -505,7 +505,7 @@ fun TabularVentasSemanalesList(ventasSemanalesViewModel: ventasSemanalesViewMode
         items(ventas) { venta ->
             val data = listOf(
                 Triple("Mes:", venta.mes, R.drawable.mes),
-                Triple("Anio:", venta.anio.toString(), R.drawable.anio),
+                Triple("Año:", venta.anio.toString(), R.drawable.anio),
                 Triple("Semana del mes:", venta.semanames.toString(), R.drawable.semana),
                 Triple("Venta total:", venta.ventaTotal.toString(), R.drawable.cantproducto)
             )
