@@ -7,6 +7,10 @@ android {
     namespace = "com.example.appbimbo"
     compileSdk = 34
 
+    lintOptions {
+    disable("NullSafeMutableLiveData")
+    }
+
     defaultConfig {
         applicationId = "com.example.appbimbo"
         minSdk = 26

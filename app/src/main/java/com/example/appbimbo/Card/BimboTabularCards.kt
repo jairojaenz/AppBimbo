@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.text.style.TextAlign
 import com.google.gson.annotations.SerializedName
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -62,7 +65,7 @@ data class VentasSemanales(
     @SerializedName("Nombre del mes") val mes: String,
     @SerializedName("Anio") val anio: Int,
     @SerializedName("Semana del mes") val semanames: Int,
-    @SerializedName("Venta totales") val ventaTotal: Double,
+    @SerializedName("Ventas totales") val ventaTotal: Double,
 )
 data class PMenosVendidos(
     @SerializedName("Nombre Producto") val nombreDelProducto: String,
@@ -140,27 +143,43 @@ interface AlbumApiService {
 }
 
 fun coneccionTabularApi(): Retrofit {
-    return Retrofit.Builder()
-        .baseUrl(URLTABULARAPI)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    return try {
+        Retrofit.Builder()
+            .baseUrl(URLTABULARAPI)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    } catch (e: Exception) {
+        // Manejar la excepción, por ejemplo, imprimir el error o lanzar una excepción personalizada
+        e.printStackTrace()
+        throw RuntimeException("Error al crear la conexión Retrofit", e)
+    }
 }
 // aqui se crean los viewmodels para el manejo de la informacion de las tarjetas
 class ventasproductofechaViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<VentaProducto>>(emptyList())
-    val ventas : StateFlow<List<VentaProducto>> = _ventas
+    val ventas: StateFlow<List<VentaProducto>> = _ventas
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
 
     private val retrofit = coneccionTabularApi()
-
     private val VentasApiService = retrofit.create(VentaProductoApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getVentas()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getVentas()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
-
-
 }
 // ViewModel
 class AlbumViewModel : ViewModel() {
@@ -212,13 +231,27 @@ class ventasclientesViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<VentasClientes>>(emptyList())
     val ventas : StateFlow<List<VentasClientes>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(VentasClientesApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getVentasClientes()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getVentasClientes()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+
+            }
         }
     }
 }
@@ -226,13 +259,26 @@ class productoCategoriaViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<productoCategoria>>(emptyList())
     val ventas : StateFlow<List<productoCategoria>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(ProductoCategoriaApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getProductosCategoria()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getProductosCategoria()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -240,13 +286,26 @@ class promedioventasViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<PromedioVentas>>(emptyList())
     val ventas : StateFlow<List<PromedioVentas>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(PromedioVentasApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getPromedioVentas()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getPromedioVentas()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -254,13 +313,26 @@ class ingresosmensualesViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<IngresosMensuales>>(emptyList())
     val ventas : StateFlow<List<IngresosMensuales>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(IngresosMensualesApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getIngresosMensuales()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getIngresosMensuales()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -268,13 +340,27 @@ class ventasSemanalesViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<VentasSemanales>>(emptyList())
     val ventas : StateFlow<List<VentasSemanales>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(VentasSemanalesApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getVentasSemanales()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getVentasSemanales()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
+
         }
     }
 }
@@ -282,13 +368,26 @@ class PMenosVendidosViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<PMenosVendidos>>(emptyList())
     val ventas : StateFlow<List<PMenosVendidos>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(PMenosVendidosApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getPMenosVendidos()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getPMenosVendidos()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -296,13 +395,26 @@ class ProductosfinSemanaViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<ProductosfinSemana>>(emptyList())
     val ventas : StateFlow<List<ProductosfinSemana>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(ProductosfinSemanaApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getProductosfinSemana()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getProductosfinSemana()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -310,13 +422,26 @@ class ProductoPorProveedorViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<ProductosPorProveedor>>(emptyList())
     val ventas : StateFlow<List<ProductosPorProveedor>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(ProductosPorProveedorApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getProductosProveedor()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getProductosProveedor()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -324,13 +449,26 @@ class TopIngresosClientesViewModel: ViewModel() {
     private val _ventas = MutableStateFlow<List<TopingresosClientes>>(emptyList())
     val ventas : StateFlow<List<TopingresosClientes>> = _ventas
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     private val retrofit = coneccionTabularApi()
 
     private val VentasApiService = retrofit.create(TopIngresosClientesApiService::class.java)
 
     init {
         viewModelScope.launch {
-            _ventas.value = VentasApiService.getTopIngresosClientes()
+            _loading.value = true
+            try {
+                _ventas.value = VentasApiService.getTopIngresosClientes()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -421,17 +559,48 @@ fun Filas(label: String, value: String, iconRes: Int) {
     }
 }
 @Composable
-fun TabularVentasList(ventasproductofechaViewModel: ventasproductofechaViewModel){
+fun TabularVentasList(ventasproductofechaViewModel: ventasproductofechaViewModel) {
     val ventas by ventasproductofechaViewModel.ventas.collectAsState()
+    val error by ventasproductofechaViewModel.error.collectAsState()
+    val loading by ventasproductofechaViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Mes:", venta.mes, R.drawable.mes),
-                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
-                Triple("Venta total:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Ventas por producto por Mes")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Mes", venta.mes, R.drawable.mes),
+                    Triple("Nombre del producto", venta.nombreDelProducto, R.drawable.pan),
+                    Triple("Venta total", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Ventas por producto por Mes")
+            }
         }
     }
 }
@@ -439,45 +608,142 @@ fun TabularVentasList(ventasproductofechaViewModel: ventasproductofechaViewModel
 @Composable
 fun TabularVentasClientesList(ventasclientesViewModel: ventasclientesViewModel){
     val ventas by ventasclientesViewModel.ventas.collectAsState()
+    val error by ventasclientesViewModel.error.collectAsState()
+    val loading by ventasclientesViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del cliente:", venta.nombreDelCliente, R.drawable.proveedor),
-                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Clientes con mayor cantidad de compras")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Nombre del cliente", venta.nombreDelCliente, R.drawable.proveedor),
+                    Triple("Cantidad de ventas", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Clientes con mayor cantidad de compras")
+            }
         }
     }
+
+
 }
 
 @Composable
 fun TabularVentasProductosList(productoCategoriaViewModel: productoCategoriaViewModel){
     val ventas by productoCategoriaViewModel.ventas.collectAsState()
+    val error by productoCategoriaViewModel.error.collectAsState()
+    val loading by productoCategoriaViewModel.loading.collectAsState()
+
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
 
     LazyColumn {
         items(ventas) { venta ->
             val data = listOf(
-                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.nombreproducto),
-                Triple("Categoria:", venta.categoria, R.drawable.check),
-                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                Triple("Nombre del producto", venta.nombreDelProducto, R.drawable.nombreproducto),
+                Triple("Categoria", venta.categoria, R.drawable.check),
+                Triple("Cantidad de ventas", venta.ventaTotal.toString(), R.drawable.cantproducto)
             )
             BimboTabularCard(data, "Ventas de productos por categoría")
-        }
+
+    }
+    }
     }
 }
 
 @Composable
 fun TabularPromedioVentasList(promedioventasViewModel: promedioventasViewModel){
     val ventas by promedioventasViewModel.ventas.collectAsState()
+    val error by promedioventasViewModel.error.collectAsState()
+    val loading by promedioventasViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del producto:", venta.mes, R.drawable.nombreproducto),
-                Triple("Promedio de ventas:", venta.promedioVentas.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Promedio de ventass diarias")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Mes", venta.mes, R.drawable.mes),
+                    Triple("Promedio de ventas diarias", venta.promedioVentas.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Promedio de ventas diarias")
+            }
         }
     }
 }
@@ -485,14 +751,45 @@ fun TabularPromedioVentasList(promedioventasViewModel: promedioventasViewModel){
 @Composable
 fun TabularIngresosMensualesList(ingresosmensualesViewModel: ingresosmensualesViewModel){
     val ventas by ingresosmensualesViewModel.ventas.collectAsState()
+    val error by ingresosmensualesViewModel.error.collectAsState()
+    val loading by ingresosmensualesViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Mes:", venta.mes, R.drawable.mes),
-                Triple("Ingresos totales:", venta.ingresos.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Ingresos totales mensuales")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Mes", venta.mes, R.drawable.mes),
+                    Triple("Ingresos", venta.ingresos.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Ingresos totales mensuales")
+            }
         }
     }
 }
@@ -500,16 +797,47 @@ fun TabularIngresosMensualesList(ingresosmensualesViewModel: ingresosmensualesVi
 @Composable
 fun TabularVentasSemanalesList(ventasSemanalesViewModel: ventasSemanalesViewModel){
     val ventas by ventasSemanalesViewModel.ventas.collectAsState()
+    val error by ventasSemanalesViewModel.error.collectAsState()
+    val loading by ventasSemanalesViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Mes:", venta.mes, R.drawable.mes),
-                Triple("Año:", venta.anio.toString(), R.drawable.anio),
-                Triple("Semana del mes:", venta.semanames.toString(), R.drawable.semana),
-                Triple("Venta total:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Ventas semanales")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Mes", venta.mes, R.drawable.mes),
+                    Triple("Año", venta.anio.toString(), R.drawable.anio),
+                    Triple("Semana del mes", venta.semanames.toString(), R.drawable.semana),
+                    Triple("Venta total", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Ventas semanales")
+            }
         }
     }
 }
@@ -517,14 +845,45 @@ fun TabularVentasSemanalesList(ventasSemanalesViewModel: ventasSemanalesViewMode
 @Composable
 fun TabularPMenosVendidosList(pmenosvendidosViewModel: PMenosVendidosViewModel){
     val ventas by pmenosvendidosViewModel.ventas.collectAsState()
+    val error by pmenosvendidosViewModel.error.collectAsState()
+    val loading by pmenosvendidosViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
-                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Productos menos vendidos")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Nombre del producto", venta.nombreDelProducto, R.drawable.pan),
+                    Triple("Cantidad de ventas", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Productos menos vendidos")
+            }
         }
     }
 }
@@ -532,14 +891,45 @@ fun TabularPMenosVendidosList(pmenosvendidosViewModel: PMenosVendidosViewModel){
 @Composable
 fun TabularProductosFinSemanaList(productosfinSemanaViewModel: ProductosfinSemanaViewModel){
     val ventas by productosfinSemanaViewModel.ventas.collectAsState()
+    val error by productosfinSemanaViewModel.error.collectAsState()
+    val loading by productosfinSemanaViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
-                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Productos vendidos los fines de semana")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Nombre del producto", venta.nombreDelProducto, R.drawable.pan),
+                    Triple("Cantidad de ventas", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Ventas de productos en fin de semana")
+            }
         }
     }
 }
@@ -547,15 +937,46 @@ fun TabularProductosFinSemanaList(productosfinSemanaViewModel: ProductosfinSeman
 @Composable
 fun TabularProductosPorProveedorList(productosPorProveedorViewModel: ProductoPorProveedorViewModel){
     val ventas by productosPorProveedorViewModel.ventas.collectAsState()
+    val error by productosPorProveedorViewModel.error.collectAsState()
+    val loading by productosPorProveedorViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del producto:", venta.nombreDelProducto, R.drawable.pan),
-                Triple("Nombre del proveedor:", venta.nombreDelProveedor, R.drawable.proveedor),
-                Triple("Cantidad de ventas:", venta.ventaTotal.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Venta de Productos por proveedor")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Nombre del producto", venta.nombreDelProducto, R.drawable.pan),
+                    Triple("Nombre del proveedor", venta.nombreDelProveedor, R.drawable.proveedor),
+                    Triple("Cantidad de ventas", venta.ventaTotal.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Venta de productos por proveedor")
+            }
         }
     }
 }
@@ -563,14 +984,45 @@ fun TabularProductosPorProveedorList(productosPorProveedorViewModel: ProductoPor
 @Composable
 fun TabularTopIngresosClientesList(topIngresosClientesViewModel: TopIngresosClientesViewModel){
     val ventas by topIngresosClientesViewModel.ventas.collectAsState()
+    val error by topIngresosClientesViewModel.error.collectAsState()
+    val loading by topIngresosClientesViewModel.loading.collectAsState()
 
-    LazyColumn {
-        items(ventas) { venta ->
-            val data = listOf(
-                Triple("Nombre del cliente:", venta.nombreDelCliente, R.drawable.proveedor),
-                Triple("Ingresos:", venta.ingresos.toString(), R.drawable.cantproducto)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboTabularCard(data, "Top de ingresos por cliente")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(ventas) { venta ->
+                val data = listOf(
+                    Triple("Nombre del cliente", venta.nombreDelCliente, R.drawable.proveedor),
+                    Triple("Ingresos", venta.ingresos.toString(), R.drawable.cantproducto)
+                )
+                BimboTabularCard(data, "Top ingresos por cliente")
+            }
         }
     }
 }

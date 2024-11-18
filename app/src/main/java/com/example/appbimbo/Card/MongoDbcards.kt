@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -165,6 +169,11 @@ interface DevolucionApiService {
 class ClienteViewModel : ViewModel() {
     private val _clientes = MutableStateFlow<List<Cliente>>(emptyList())
     val clientes: StateFlow<List<Cliente>> = _clientes
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -175,7 +184,14 @@ class ClienteViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _clientes.value = clienteApiService.getClientes()
+            _loading.value = true
+            try {
+                _clientes.value = clienteApiService.getClientes()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -183,6 +199,12 @@ class ClienteViewModel : ViewModel() {
 class SucursalViewModel : ViewModel() {
     private val _sucursales = MutableStateFlow<List<Sucursal>>(emptyList())
     val sucursales: StateFlow<List<Sucursal>> = _sucursales
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -193,7 +215,14 @@ class SucursalViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _sucursales.value = sucursalApiService.getSucursales()
+            _loading.value = true
+            try {
+                _sucursales.value = sucursalApiService.getSucursales()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -208,6 +237,9 @@ class ClienteCytyViewModel : ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
         .addConverterFactory(GsonConverterFactory.create())
@@ -217,17 +249,24 @@ class ClienteCytyViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _loading.value = true
-            _clientes.value = clienteApiService.getClientes()
-            _loading.value = false
         }
     }
 
     fun searchClientsByCity(city: String) {
         viewModelScope.launch {
             _loading.value = true
-            _searchResults.value = clienteApiService.getClientsByCity(city)
-            _loading.value = false
+            try {
+                val results = clienteApiService.getClientsByCity(city)
+                if (results.isEmpty()) {
+                    _error.value = "No hay datos disponibles"
+                } else {
+                    _searchResults.value = results
+                }
+            } catch (e: Exception) {
+                _error.value = "Hay problemas con la conexión al servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -236,6 +275,12 @@ class ClienteAgeViewModel : ViewModel() {
     private val _clientes = MutableStateFlow<List<Cliente>>(emptyList())
     val clientes: StateFlow<List<Cliente>> = _clientes
 
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
         .addConverterFactory(GsonConverterFactory.create())
@@ -245,7 +290,14 @@ class ClienteAgeViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _clientes.value = clienteApiService.getClientsByAge()
+            _loading.value = true
+            try {
+                _clientes.value = clienteApiService.getClientsByAge()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -257,6 +309,9 @@ class PedidoViewModel : ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
         .addConverterFactory(GsonConverterFactory.create())
@@ -267,8 +322,13 @@ class PedidoViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             _loading.value = true
-            _pedidos.value = pedidoApiService.getPedidos()
-            _loading.value = false
+            try {
+                _pedidos.value = pedidoApiService.getPedidos()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -280,6 +340,11 @@ class PedidoOrderedByTotalViewModel: ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
         .addConverterFactory(GsonConverterFactory.create())
@@ -290,8 +355,13 @@ class PedidoOrderedByTotalViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             _loading.value = true
-            _pedidos.value = pedidoApiService.getPedidosOrderedByTotal()
-            _loading.value = false
+            try {
+                _pedidos.value = pedidoApiService.getPedidosOrderedByTotal()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -302,6 +372,8 @@ class PedidoPendientesViewModel: ViewModel() {
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -313,8 +385,13 @@ class PedidoPendientesViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             _loading.value = true
-            _pedidos.value = pedidoApiService.getPedidosPendientes()
-            _loading.value = false
+            try {
+                _pedidos.value = pedidoApiService.getPedidosPendientes()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -326,6 +403,9 @@ class PedidoConfirmadosViewModel: ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
         .addConverterFactory(GsonConverterFactory.create())
@@ -336,8 +416,13 @@ class PedidoConfirmadosViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             _loading.value = true
-            _pedidos.value = pedidoApiService.getPedidosConfirmados()
-            _loading.value = false
+            try {
+                _pedidos.value = pedidoApiService.getPedidosConfirmados()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -345,6 +430,12 @@ class PedidoConfirmadosViewModel: ViewModel() {
 class ComentariosViewModel: ViewModel() {
     private val _comentarios = MutableStateFlow<List<Comentarios>>(emptyList())
     val comentarios: StateFlow<List<Comentarios>> = _comentarios
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -355,7 +446,14 @@ class ComentariosViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            _comentarios.value = comentariosApiService.getComentarios()
+            _loading.value = true
+            try {
+                _comentarios.value = comentariosApiService.getComentarios()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -363,6 +461,12 @@ class ComentariosViewModel: ViewModel() {
 class FacturacionPagoViewModel: ViewModel() {
     private val _facturacionPago = MutableStateFlow<List<facturacionpago>>(emptyList())
     val facturacionPago: StateFlow<List<facturacionpago>> = _facturacionPago
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -373,7 +477,14 @@ class FacturacionPagoViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            _facturacionPago.value = facturacionPagoApiService.getFacturacionPago()
+            _loading.value = true
+            try {
+                _facturacionPago.value = facturacionPagoApiService.getFacturacionPago()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -381,6 +492,12 @@ class FacturacionPagoViewModel: ViewModel() {
 class DevolucionViewModel: ViewModel() {
     private val _devoluciones = MutableStateFlow<List<devolucion>>(emptyList())
     val devoluciones: StateFlow<List<devolucion>> = _devoluciones
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("$URLAPI")
@@ -391,7 +508,14 @@ class DevolucionViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            _devoluciones.value = devolucionApiService.getDevoluciones()
+            _loading.value = true
+            try {
+                _devoluciones.value = devolucionApiService.getDevoluciones()
+            } catch (e: Exception) {
+                _error.value = "No se pudo establecer conexión con el servidor"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -518,41 +642,103 @@ fun Filas(label: String, value: String) {
 @Composable
 fun BimboMongodbClientList(clienteViewModel: ClienteViewModel) {
     val clientes by clienteViewModel.clientes.collectAsState()
+    val loading by clienteViewModel.loading.collectAsState()
+    val error by clienteViewModel.error.collectAsState()
 
-    LazyColumn {
-        items(clientes) { cliente ->
-            val data = listOf(
-                "Nombre" to cliente.nombre,
-                "Edad" to cliente.edad.toString(),
-                "Email" to cliente.email,
-                "Telefono" to cliente.telefono,
-                "Fecha de registro" to cliente.fecha_registro,
-                "Calle" to cliente.direccion.calle,
-                "Ciudad" to cliente.direccion.ciudad,
-                "Pais" to cliente.direccion.pais
-            )
-            BimboMongoDbCard(data = data, Titulo = "Información del cliente")
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
         }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+            LazyColumn {
+                items(clientes) { cliente ->
+                    val data = listOf(
+                        "Nombre" to cliente.nombre,
+                        "Edad" to cliente.edad.toString(),
+                        "Email" to cliente.email,
+                        "Telefono" to cliente.telefono,
+                        "Fecha de registro" to cliente.fecha_registro,
+                        "Calle" to cliente.direccion.calle,
+                        "Ciudad" to cliente.direccion.ciudad,
+                        "Pais" to cliente.direccion.pais
+                    )
+                    BimboMongoDbCard(data = data, Titulo = "Información del cliente")
+                }
+            }
     }
 }
 @Composable
 fun BimboMongodbSucursalesList(sucursalViewModel: SucursalViewModel){
     val sucursales by sucursalViewModel.sucursales.collectAsState()
+    val loading by sucursalViewModel.loading.collectAsState()
+    val error by sucursalViewModel.error.collectAsState()
 
-    LazyColumn {
-        items(sucursales) { sucursal ->
-            val data = listOf(
-                "Nombre" to sucursal.nombre,
-                "Telefono" to sucursal.telefono,
-                "Calle" to sucursal.direccion.calle,
-                "Ciudad" to sucursal.direccion.ciudad,
-                "Código Postal" to sucursal.direccion.codigo_postal,
-                "Pais" to sucursal.direccion.pais,
-                "Dia de la semana" to sucursal.horario_atencion.dia_semana,
-                "Hora de apertura" to sucursal.horario_atencion.hora_apertura,
-                "Hora de cierre" to sucursal.horario_atencion.hora_cierre
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Green)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboMongoDbCard(data = data, Titulo = "Información de la sucursal")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(sucursales) { sucursal ->
+                val data = listOf(
+                    "Nombre" to sucursal.nombre,
+                    "Telefono" to sucursal.telefono,
+                    "Calle" to sucursal.direccion.calle,
+                    "Ciudad" to sucursal.direccion.ciudad,
+                    "Código Postal" to sucursal.direccion.codigo_postal,
+                    "Pais" to sucursal.direccion.pais,
+                    "Dia de la semana" to sucursal.horario_atencion.dia_semana,
+                    "Hora de apertura" to sucursal.horario_atencion.hora_apertura,
+                    "Hora de cierre" to sucursal.horario_atencion.hora_cierre
+                )
+                BimboMongoDbCard(data = data, Titulo = "Información de la sucursal")
+            }
         }
     }
 
@@ -562,50 +748,71 @@ fun SearchClientByCityList(viewModel: ClienteCytyViewModel) {
     val loading by viewModel.loading.collectAsState()
     var city by remember { mutableStateOf("") }
     val searchResults by viewModel.searchResults.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        TextField(
-            value = city,
-            onValueChange = { city = it },
-            label = { Text("Buscar por ciudad") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = { viewModel.searchClientsByCity(city) },
-            modifier = Modifier.align(Alignment.End)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Text("Buscar")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (loading) {
-                CircularProgressIndicator(
-                    color = Color.Green,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn {
-                    items(searchResults) { cliente ->
-                        val data = listOf(
-                            "Nombre" to cliente.nombre,
-                            "Edad" to cliente.edad.toString(),
-                            "Email" to cliente.email,
-                            "Telefono" to cliente.telefono,
-                            "Fecha de registro" to cliente.fecha_registro,
-                            "Calle" to cliente.direccion.calle,
-                            "Ciudad" to cliente.direccion.ciudad,
-                            "Pais" to cliente.direccion.pais
+            TextField(
+                value = city,
+                onValueChange = { city = it },
+                label = { Text("Buscar por ciudad") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { viewModel.searchClientsByCity(city) },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Buscar")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        color = Color.Green,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else if (error != null) {
+                    Column (
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error",
+                            tint = Color.Red,
+                            modifier = Modifier.size(50.dp)
                         )
-                        BimboMongoDbCard(data = data, Titulo = "Información del cliente")
+                        Text(
+                            text = error!!,
+                            color = Color.Red,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
                     }
-                }
+                } else {
+                    LazyColumn {
+                        items(searchResults) { cliente ->
+                            val data = listOf(
+                                "Nombre" to cliente.nombre,
+                                "Edad" to cliente.edad.toString(),
+                                "Email" to cliente.email,
+                                "Telefono" to cliente.telefono,
+                                "Fecha de registro" to cliente.fecha_registro,
+                                "Calle" to cliente.direccion.calle,
+                                "Ciudad" to cliente.direccion.ciudad,
+                                "Pais" to cliente.direccion.pais
+                            )
+                            BimboMongoDbCard(data = data, Titulo = "Información del cliente")
+                        }
+                    }
             }
         }
     }
@@ -613,6 +820,37 @@ fun SearchClientByCityList(viewModel: ClienteCytyViewModel) {
 @Composable
 fun BimboMongodbListClientesByAge(clienteAgeViewModel: ClienteAgeViewModel) {
     val clientes by clienteAgeViewModel.clientes.collectAsState()
+    val loading by clienteAgeViewModel.loading.collectAsState()
+    val error by clienteAgeViewModel.error.collectAsState()
+
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
 
     LazyColumn {
         items(clientes) { cliente ->
@@ -627,6 +865,7 @@ fun BimboMongodbListClientesByAge(clienteAgeViewModel: ClienteAgeViewModel) {
                 "Pais" to cliente.direccion.pais
             )
             BimboMongoDbCard(data = data, Titulo = "Información del cliente")
+            }
         }
     }
 }
@@ -635,14 +874,36 @@ fun BimboMongodbListClientesByAge(clienteAgeViewModel: ClienteAgeViewModel) {
 fun BimboMongodbListPedidos(pedidoViewModel: PedidoViewModel) {
     val loading by pedidoViewModel.loading.collectAsState()
     val pedidos by pedidoViewModel.pedidos.collectAsState()
+    val error by pedidoViewModel.error.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Red,
-                strokeWidth = 10.dp,
-                modifier = Modifier.align(Alignment.Center)
-                    )
-        } else {
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
             LazyColumn {
                 items(pedidos) { pedido ->
                     val data = listOf(
@@ -655,7 +916,7 @@ fun BimboMongodbListPedidos(pedidoViewModel: PedidoViewModel) {
                     BimboMongoDbCard(data = data, Titulo = "Información del pedido")
                 }
             }
-        }
+
     }
 }
 //Lista de pedidos ordenados por total
@@ -663,13 +924,35 @@ fun BimboMongodbListPedidos(pedidoViewModel: PedidoViewModel) {
 fun BimboMongodbListPedidosOrderedByTotal(pedidoOrderedByTotalViewModel: PedidoOrderedByTotalViewModel) {
     val loading by pedidoOrderedByTotalViewModel.loading.collectAsState()
     val pedidos by pedidoOrderedByTotalViewModel.pedidos.collectAsState()
+    val error by pedidoOrderedByTotalViewModel.error.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Red,
-                strokeWidth = 10.dp,
-                modifier = Modifier.align(Alignment.Center)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
         } else {
             LazyColumn {
                 items(pedidos) { pedido ->
@@ -684,20 +967,41 @@ fun BimboMongodbListPedidosOrderedByTotal(pedidoOrderedByTotalViewModel: PedidoO
                 }
             }
         }
-    }
 }
 //Lista de pedidos pendientes
 @Composable
 fun BimboMongodbListPedidosPendientes(pedidoPendientesViewModel: PedidoPendientesViewModel) {
     val loading by pedidoPendientesViewModel.loading.collectAsState()
     val pedidos by pedidoPendientesViewModel.pedidos.collectAsState()
+    val  error by pedidoPendientesViewModel.error.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Red,
-                strokeWidth = 10.dp,
-                modifier = Modifier.align(Alignment.Center)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
         } else {
             LazyColumn {
                 items(pedidos) { pedido ->
@@ -712,20 +1016,41 @@ fun BimboMongodbListPedidosPendientes(pedidoPendientesViewModel: PedidoPendiente
                 }
             }
         }
-    }
 }
 //Lista de pedidos confirmados
 @Composable
 fun BimboMongodbListPedidosConfirmados(pedidoConfirmadosViewModel: PedidoConfirmadosViewModel) {
     val loading by pedidoConfirmadosViewModel.loading.collectAsState()
     val pedidos by pedidoConfirmadosViewModel.pedidos.collectAsState()
+    val error by pedidoConfirmadosViewModel.error.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Red,
-                strokeWidth = 10.dp,
-                modifier = Modifier.align(Alignment.Center)
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
         } else {
             LazyColumn {
                 items(pedidos) { pedido ->
@@ -740,22 +1065,53 @@ fun BimboMongodbListPedidosConfirmados(pedidoConfirmadosViewModel: PedidoConfirm
                 }
             }
         }
-    }
 }
 //Lista de comentarios
 @Composable
 fun BimboMongodbListComentarios(comentariosViewModel: ComentariosViewModel) {
     val comentarios by comentariosViewModel.comentarios.collectAsState()
+    val loading by comentariosViewModel.loading.collectAsState()
+    val error by comentariosViewModel.error.collectAsState()
 
-    LazyColumn {
-        items(comentarios) { comentario ->
-            val data = listOf(
-                "Nombre del cliente" to comentario.nombre_cliente,
-                "Fecha de publicación" to comentario.fecha_publicacion,
-                "Contenido" to comentario.contenido,
-                "Tipo de comentario" to comentario.tipo_comentario
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboMongoDbCard(data = data, Titulo = "Información del comentario")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+
+        LazyColumn {
+            items(comentarios) { comentario ->
+                val data = listOf(
+                    "Nombre del cliente" to comentario.nombre_cliente,
+                    "Fecha de publicación" to comentario.fecha_publicacion,
+                    "Contenido" to comentario.contenido,
+                    "Tipo de comentario" to comentario.tipo_comentario
+                )
+                BimboMongoDbCard(data = data, Titulo = "Información del comentario")
+            }
         }
     }
 }
@@ -763,25 +1119,87 @@ fun BimboMongodbListComentarios(comentariosViewModel: ComentariosViewModel) {
 @Composable
 fun BimboMongodbListFacturacionPago(facturacionPagoViewModel: FacturacionPagoViewModel) {
     val facturacionPago by facturacionPagoViewModel.facturacionPago.collectAsState()
+    val loading by facturacionPagoViewModel.loading.collectAsState()
+    val error by facturacionPagoViewModel.error.collectAsState()
 
-    LazyColumn {
-        items(facturacionPago) { facturacionPago ->
-            val data = listOf(
-                "Nombre del cliente" to facturacionPago.nombre_cliente,
-                "Estado de pago" to facturacionPago.estado_pago,
-                "Fecha de emisión" to facturacionPago.fecha_emision,
-                "Fecha de vencimiento" to facturacionPago.fecha_vencimiento,
-                "Método de pago" to facturacionPago.metodo_pago,
-                "Monto total" to facturacionPago.monto_total.toString(),
-                "Productos" to facturacionPago.nombres_productos.joinToString()
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
             )
-            BimboMongoDbCard(data = data, Titulo = "Información de facturación y pago")
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        LazyColumn {
+            items(facturacionPago) { facturacionPago ->
+                val data = listOf(
+                    "Nombre del cliente" to facturacionPago.nombre_cliente,
+                    "Estado de pago" to facturacionPago.estado_pago,
+                    "Fecha de emisión" to facturacionPago.fecha_emision,
+                    "Fecha de vencimiento" to facturacionPago.fecha_vencimiento,
+                    "Método de pago" to facturacionPago.metodo_pago,
+                    "Monto total" to facturacionPago.monto_total.toString(),
+                    "Productos" to facturacionPago.nombres_productos.joinToString()
+                )
+                BimboMongoDbCard(data = data, Titulo = "Información de facturación y pago")
+            }
         }
     }
 }
 @Composable
 fun BimboMongodbListDevoluciones(devolucionViewModel: DevolucionViewModel) {
     val devoluciones by devolucionViewModel.devoluciones.collectAsState()
+    val loading by devolucionViewModel.loading.collectAsState()
+    val error by devolucionViewModel.error.collectAsState()
+
+    if (loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else if (error != null) {
+        Column (
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Error",
+                tint = Color.Red,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                text = error!!,
+                color = Color.Red,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
 
     LazyColumn {
         items(devoluciones) { devolucion ->
@@ -793,6 +1211,7 @@ fun BimboMongodbListDevoluciones(devolucionViewModel: DevolucionViewModel) {
                 "Productos devueltos" to devolucion.productos_devueltos.joinToString { (it.nombre_producto to it.cantidad.toString()).toString() }
             )
             BimboMongoDbCard(data = data, Titulo = "Información de devolución")
+        }
         }
     }
 }
